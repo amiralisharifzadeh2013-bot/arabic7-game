@@ -1,12 +1,9 @@
 {
-  "admin": {
-    "code": "59",
-    "name": "مدیر سامانه"
-  },
+  "version": "OMEGA 1.0",
+  "admin_code": "59",
+  "retention_days": 3,
+  "retention_mode": "3days",
   "students": [],
   "messages": [],
-  "settings": {
-    "retentionDays": 3,
-    "note": "در GitHub Pages این فایل منبع اولیه است و نوشتن مستقیم روی آن ممکن نیست؛ تغییرات کاربر در localStorage ذخیره می‌شود."
-  }
+  "note": "در GitHub Pages این فایل فقط دادهٔ اولیه است؛ ذخیرهٔ واقعی بین دستگاه‌ها نیازمند بک‌اند است."
 }
