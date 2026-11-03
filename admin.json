@@ -1,25 +1,12 @@
 {
-  "app": {
-    "name": "Arabic Quest Ultimate",
-    "version": "3.0",
-    "footer": "سازنده: امیرعلی شریعت‌زاده"
-  },
   "admin": {
     "code": "59",
-    "role": "manager",
-    "note": "این پنل کاملاً سمت کاربر است و امنیت واقعی حساب کاربری/سرور ندارد."
+    "name": "مدیر سامانه"
   },
-  "permissions": [
-    "manage_lessons",
-    "manage_questions",
-    "manage_students",
-    "enter_grades",
-    "export_data",
-    "import_data"
-  ],
-  "gradeScale": {
-    "min": 0,
-    "max": 20
-  },
-  "students": []
+  "students": [],
+  "messages": [],
+  "settings": {
+    "retentionDays": 3,
+    "note": "در GitHub Pages این فایل منبع اولیه است و نوشتن مستقیم روی آن ممکن نیست؛ تغییرات کاربر در localStorage ذخیره می‌شود."
+  }
 }
