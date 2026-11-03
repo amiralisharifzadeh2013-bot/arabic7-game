@@ -1,109 +1,64 @@
+const ADMIN_CODE="59";
+const KEY="aq_ultimate_state", DATAKEY="aq_ultimate_data", ADMINKEY="aq_ultimate_admin";
+let data={},adminData={},state={},currentLesson=null,quiz=null,flashIndex=0;
 
-let DATA, state = JSON.parse(localStorage.getItem("arabic7_state")||'{"xp":0,"done":[],"streak":0,"badges":[],"lastDay":""}');
-let currentLesson=null, quizList=[], quizIndex=0, quizScore=0, timer=null, speed=false;
-
-const fa=n=>new Intl.NumberFormat("fa-IR").format(n);
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const seedState={name:"ماجراجو",first:"",last:"",phone:"",xp:0,coins:25,hearts:5,done:[],badges:[],streak:0,lastDay:"",correct:0,answered:0,quizzes:0,speedBest:0,mistakes:[],theme:"system",sound:true,anim:true,missions:{xp:0,quiz:0,flash:0},login:false};
+const flash=[["مَدرَسَةٌ","مدرسه"],["کِتابٌ","کتاب"],["قَلَمٌ","قلم"],["مُعَلِّمٌ","معلم"],["طالِبٌ","دانش‌آموز"],["بَیتٌ","خانه"],["أبٌ","پدر"],["أمٌّ","مادر"],["أخٌ","برادر"],["أختٌ","خواهر"],["خَمْسَةٌ","پنج"],["عَشَرَةٌ","ده"],["یَذهَبُ","می‌رود"],["کَتَبَ","نوشت"]];
+function clone(x){return JSON.parse(JSON.stringify(x))}
 async function boot(){
-  DATA=JSON.parse(localStorage.getItem("arabic7_data")||"null");
-  if(!DATA){DATA=await fetch("data.json").then(r=>r.json()); saveData();}
-  renderHome(); updateStats();
+ try{data=JSON.parse(localStorage.getItem(DATAKEY))||await fetch("data.json").then(r=>r.json())}catch{data={lessons:[]}}
+ try{adminData=JSON.parse(localStorage.getItem(ADMINKEY))||await fetch("admin.json").then(r=>r.json())}catch{adminData={students:[],admin:{code:"59"}}}
+ try{state={...clone(seedState),...JSON.parse(localStorage.getItem(KEY)||"{}")}}catch{state=clone(seedState)}
+ if(!state.login){go("login")} else {renderAll()}
+ applyTheme(); 
 }
-function saveData(){localStorage.setItem("arabic7_data",JSON.stringify(DATA))}
-function saveState(){localStorage.setItem("arabic7_state",JSON.stringify(state));updateStats()}
-function toast(t){const x=document.getElementById("toast");x.textContent=t;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),2200)}
-function show(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");scrollTo({top:0,behavior:"smooth"})}
-function scrollToMap(){document.getElementById("mapSection").scrollIntoView({behavior:"smooth"})}
-function goHome(){show("home");renderHome()}
-function renderHome(){
- const grid=document.getElementById("lessonGrid"); grid.innerHTML="";
- DATA.lessons.forEach((l,i)=>{
-   const unlocked=i===0||state.done.includes(DATA.lessons[i-1].id);
-   const done=state.done.includes(l.id);
-   grid.innerHTML+=`<article class="lesson-card ${!unlocked?"locked":""} ${done?"done":""}" onclick="${unlocked?`openLesson(${l.id})`:``}">
-      <span class="lesson-number">${fa(i+1)}</span><div class="lesson-emoji">${l.emoji||"📘"}</div>
-      <h3>${l.title}</h3><p>${l.summary}</p><div class="mini-progress"><i style="width:${done?100:0}%"></i></div>
-      <small>${done?"✅ تکمیل شد":unlocked?"▶ شروع مرحله":"🔒 قفل"}</small>
-   </article>`;
- });
-}
-function updateStats(){
- let xp=state.xp||0, level=Math.floor(xp/100)+1, inside=xp%100;
- document.getElementById("xpText").textContent=fa(xp);
- document.getElementById("xpStat").textContent=fa(xp);
- document.getElementById("levelText").textContent=fa(level);
- document.getElementById("xpFill").style.width=inside+"%";
- document.getElementById("doneCount").textContent=fa(state.done.length);
- document.getElementById("badgeCount").textContent=fa(state.badges.length);
- document.getElementById("streak").textContent=fa(state.streak||0);
-}
-function addXP(n){state.xp+=n;if(state.xp>=100&&!state.badges.includes("level1")){state.badges.push("level1");toast("🏅 نشان اول را گرفتی!")}saveState()}
-function openLesson(id){
- currentLesson=DATA.lessons.find(x=>x.id===id); show("lesson");
- const notes=currentLesson.notes.map(n=>`<div class="note"><b>${n.title}</b><div>${n.body}</div></div>`).join("");
- document.getElementById("lessonView").innerHTML=`<div class="lesson-hero"><div class="big">${currentLesson.emoji}</div><span class="pill">مرحله ${fa(currentLesson.id)}</span><h1>${currentLesson.title}</h1><p>${currentLesson.summary}</p></div>
- <div class="content-grid"><div class="panel"><h2>📖 جزوه</h2>${notes}</div>
- <div><div class="panel"><h2>🧠 قواعد</h2><p style="line-height:2">${currentLesson.grammar}</p></div>
- <div class="panel"><h2>🎮 مأموریت</h2><p>برای بازکردن مرحله بعد، آزمون این درس را کامل کن.</p><button class="primary wide" onclick="startLessonQuiz(${id})">شروع آزمون 🎯</button></div></div></div>`;
-}
-function startLessonQuiz(id){const l=DATA.lessons.find(x=>x.id===id);startQuiz(l.questions,`آزمون ${l.title}`)}
-function openAllQuiz(){
- const all=DATA.lessons.flatMap(l=>l.questions.map(q=>({...q,lesson:l.title}))).sort(()=>Math.random()-.5).slice(0,10);
- startQuiz(all,"🏆 آزمون جامع")
-}
-function startSpeedQuiz(){speed=true;const all=DATA.lessons.flatMap(l=>l.questions).sort(()=>Math.random()-.5).slice(0,5);startQuiz(all,"⚡ چالش سرعتی")}
-function startWordGame(){const all=DATA.lessons.flatMap(l=>l.questions).sort(()=>Math.random()-.5).slice(0,5);startQuiz(all,"🧠 واژه‌یاب")}
-function startQuiz(list,title){
- quizList=list;quizIndex=0;quizScore=0;show("quiz");renderQuestion(title);
-}
-function renderQuestion(title){
- clearInterval(timer);
- if(quizIndex>=quizList.length){finishQuiz();return}
- const q=quizList[quizIndex];
- document.getElementById("quizView").innerHTML=`<div class="quiz-box"><div class="quiz-top"><span>${title}</span><span>${fa(quizIndex+1)} / ${fa(quizList.length)}</span></div>
- <h2 class="question">${q.q}</h2><div class="options">${q.options.map((o,i)=>`<button class="option" onclick="answer(${i},${q.answer})">${String.fromCharCode(65+i)}) ${o}</button>`).join("")}</div></div>`;
-}
-function answer(choice,correct){
- const opts=[...document.querySelectorAll(".option")];opts.forEach(x=>x.disabled=true);
- if(choice===correct){opts[choice].classList.add("correct");quizScore++;addXP(DATA.app.xpPerCorrect);toast("✅ درست! +10 XP")}
- else{opts[choice].classList.add("wrong");opts[correct].classList.add("correct");toast("❌ جواب درست را ببین و دوباره تمرین کن")}
- setTimeout(()=>{quizIndex++;renderQuestion("ادامه آزمون")},650);
-}
-function finishQuiz(){
- clearInterval(timer); const pct=Math.round(quizScore/quizList.length*100);
- if(currentLesson && quizScore>=Math.ceil(quizList.length*.6) && !state.done.includes(currentLesson.id)){
-   state.done.push(currentLesson.id);state.streak=(state.streak||0)+1;
-   addXP(20);toast("🎉 مرحله کامل شد! مرحله بعد باز شد.");
- }
- document.getElementById("quizView").innerHTML=`<div class="quiz-box result"><div class="trophy">${pct>=80?"🏆":pct>=50?"🌟":"💪"}</div><h1>آزمون تمام شد!</h1><p>امتیاز تو: <b>${fa(quizScore)} از ${fa(quizList.length)}</b></p><p>${pct>=80?"عالی بود!":"یک دور دیگر تمرین کن تا قوی‌تر شوی."}</p><button class="primary" onclick="goHome()">برگشت به نقشه</button></div>`;
- currentLesson=null;saveState();
-}
-function askAdmin(){
- const code=prompt("🔐 عدد رمز مدیریت را وارد کن:");
- if(code==="59"){show("admin");renderAdmin();toast("🛠️ حالت مدیریت فعال شد")}else if(code!==null)toast("⛔ رمز اشتباه است")
-}
-function renderAdmin(){
- const box=document.getElementById("adminLessons");
- box.innerHTML=DATA.lessons.map(l=>`<div class="admin-row"><span>${l.emoji||"📘"} ${l.title}</span><button onclick="removeLesson(${l.id})">حذف</button></div>`).join("");
-}
-function addLesson(){
- const title=document.getElementById("newTitle").value.trim()||"درس جدید";
- const summary=document.getElementById("newSummary").value.trim()||"درس جدید عربی هفتم";
- const grammar=document.getElementById("newGrammar").value.trim()||"قواعد این درس را اینجا اضافه کنید.";
- const id=Math.max(...DATA.lessons.map(x=>x.id),0)+1;
- DATA.lessons.push({id,title,emoji:"✨",summary,grammar,notes:[{title:"جزوه",body:"محتوای این درس را از پنل مدیریت یا فایل JSON تکمیل کنید."}],questions:[{q:"این یک سؤال نمونه است. گزینه درست کدام است؟",options:["گزینه ۱","گزینه ۲","گزینه ۳","گزینه ۴"],answer:0}]});
- saveData();renderAdmin();renderHome();toast("درس اضافه شد");
-}
-function removeLesson(id){if(confirm("این درس حذف شود؟")){DATA.lessons=DATA.lessons.filter(x=>x.id!==id);saveData();renderAdmin();renderHome()}}
-function exportData(){
- const blob=new Blob([JSON.stringify(DATA,null,2)],{type:"application/json"}),a=document.createElement("a");
- a.href=URL.createObjectURL(blob);a.download="data.json";a.click();URL.revokeObjectURL(a.href);
-}
-function importData(e){
- const f=e.target.files[0];if(!f)return;const r=new FileReader();
- r.onload=()=>{try{DATA=JSON.parse(r.result);saveData();renderAdmin();renderHome();toast("JSON وارد شد")}catch{toast("JSON نامعتبر است")}};r.readAsText(f)
-}
-function resetLocal(){if(confirm("همه تغییرات محلی پاک شود؟")){localStorage.removeItem("arabic7_data");location.reload()}}
-document.getElementById("adminBtn").onclick=askAdmin;
-document.getElementById("themeBtn").onclick=()=>{document.body.classList.toggle("dark");localStorage.setItem("arabic7_dark",document.body.classList.contains("dark"))};
-if(localStorage.getItem("arabic7_dark")==="true")document.body.classList.add("dark");
+function save(){localStorage.setItem(KEY,JSON.stringify(state));localStorage.setItem(DATAKEY,JSON.stringify(data));localStorage.setItem(ADMINKEY,JSON.stringify(adminData))}
+function toast(t){let x=$("#toast");x.textContent=t;x.classList.add("show");clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>x.classList.remove("show"),2200)}
+function level(){return Math.floor(state.xp/100)+1}
+function applyTheme(){let t=state.theme==="system"?(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"):state.theme;document.documentElement.dataset.theme=t}
+function go(page){$$(".page").forEach(x=>x.classList.remove("active"));let el=$("#"+page);if(el)el.classList.add("active");window.scrollTo({top:0,behavior:"smooth"});if(page==="admin")renderAdmin();if(page==="map")renderMap()}
+function beep(ok=true){if(!state.sound)return;try{let c=new AudioContext(),o=c.createOscillator(),g=c.createGain();o.frequency.value=ok?650:180;g.gain.value=.03;o.connect(g);g.connect(c.destination);o.start();setTimeout(()=>{o.stop();c.close()},100)}catch{}}
+function updateStats(){let total=data.lessons.length||1,acc=state.answered?Math.round(state.correct/state.answered*100):0;
+ $("#hearts").textContent=state.hearts;$("#coins").textContent=state.coins;$("#xp").textContent=state.xp;$("#homeXp").textContent=state.xp;$("#streak").textContent=state.streak;$("#badgeCount").textContent=state.badges.length;$("#done").textContent=`${state.done.length}/${total}`;$("#level").textContent=level();$("#mapLevel").textContent=level();$("#shopCoins").textContent=state.coins;
+ $("#profileName").textContent=state.name;$("#profileLevel").textContent=level();$("#profileXp").textContent=state.xp;$("#accuracy").textContent=acc+"%";$("#profileStreak").textContent=state.streak;
+ let p=Math.round(state.done.length/total*100);$("#bar").style.width=p+"%";$("#pct").textContent=p+"%"}
+function renderMap(){let html=data.lessons.map((l,i)=>{let unlocked=i===0||state.done.includes(data.lessons[i-1].id),done=state.done.includes(l.id);return `<article class="lessonCard card ${unlocked?"":"locked"}"><div class="lessonIcon">${done?"✅":l.icon||"✨"}</div><div><small>مرحله ${i+1}</small><h3>${l.title}</h3><p>${l.topic||""}</p></div><button class="${unlocked?"primary":"secondary"}" ${unlocked?`onclick="openLesson(${l.id})"`:"disabled"}>${done?"مرور":unlocked?"شروع":"🔒"}</button></article>`}).join("");$("#lessonMap").innerHTML=html;$("#homeMap").innerHTML=data.lessons.slice(0,5).map((l,i)=>`<div class="mini card"><small>مرحله ${i+1}</small><h3>${state.done.includes(l.id)?"✅":"🔹"} ${l.title}</h3><small>${i===0||state.done.includes(data.lessons[i-1]?.id)?"آماده":"🔒 قفل"}</small></div>`).join("")}
+function renderDaily(){let l=data.lessons[(new Date().getDate())%Math.max(1,data.lessons.length)],q=l?.questions?.[0];$("#daily").innerHTML=q?`<div><h3>🎯 ${q[0]}</h3><p>پاسخ درست: +XP و 🪙</p></div><button class="primary" onclick='startQuiz([${JSON.stringify(q)}],"چالش روزانه",null)'>شروع</button>`:`<p>محتوا هنوز اضافه نشده.</p>`}
+function renderMissions(){let arr=[["⚡","کسب 100 XP امروز",state.missions.xp,100],["🧠","یک آزمون کامل کن",state.missions.quiz,1],["🃏","۵ فلش‌کارت مرور کن",state.missions.flash,5]];$("#missionsBox").innerHTML=arr.map(x=>`<div class="mission card"><b>${x[0]}</b><h3>${x[1]}</h3><p>${Math.min(x[2],x[3])}/${x[3]}</p><div class="progress"><div><span style="width:${Math.min(100,x[2]/x[3]*100)}%"></span></div></div></div>`).join("")}
+function renderAchievements(){let vals=[state.done.length>=1,state.streak>=3,state.speedBest>=10,(state.answered&&state.correct/state.answered>=.9),state.done.length>=data.lessons.length,state.coins>=100,state.quizzes>=5,state.hearts<=1];let a=[["🌱","شروع سفر"],["🔥","در مسیر"],["⚡","سرعت نور"],["🎯","تک‌تیرانداز"],["🏆","قهرمان عربی"],["🪙","کلکسیونر"],["🧠","دانشمند"],["❤️","جان‌سخت"]];$("#achievementsBox").innerHTML=a.map((x,i)=>`<div class="achievement card ${vals[i]?"":"locked"}"><div style="font-size:38px">${x[0]}</div><h3>${x[1]}</h3><small>${vals[i]?"🏆 باز شده":"🔒 قفل"}</small></div>`).join("");state.badges=vals.map((v,i)=>v?i:null).filter(x=>x!==null)}
+function renderShop(){$("#shopBox").innerHTML=[["heart","❤️","قلب اضافه",25,"یک قلب اضافه می‌کند"],["shield","🛡️","سپر اشتباه",40,"یک اشتباه را بدون کم‌شدن قلب تحمل می‌کند"],["xp","⚡","بوستر XP",50,"یک بوستر برای آزمون بعدی"]].map(x=>`<div class="shopItem card"><span style="font-size:36px">${x[1]}</span><div><h3>${x[2]}</h3><p>${x[4]}</p><button class="primary" onclick="buy('${x[0]}',${x[3]})">🪙 ${x[3]}</button></div></div>`).join("")}
+function buy(id,cost){if(state.coins<cost)return toast("🪙 سکه کافی نیست");state.coins-=cost;if(id==="heart")state.hearts=Math.min(5,state.hearts+1);else state.owned=(state.owned||[]).concat(id);save();renderAll();toast("خرید موفق بود 🎉")}
+function openLesson(id){let l=data.lessons.find(x=>x.id===id);if(!l)return;currentLesson=l;go("lesson");$("#lessonBox").innerHTML=`<div class="lessonHero"><small>مرحله ${data.lessons.indexOf(l)+1}</small><h1>${l.icon||"✨"} ${l.title}</h1><p>${l.topic||""}</p></div><div class="note"><b>📘 جزوه</b><br>${l.note||"جزوه این مرحله آماده است."}</div><div class="note"><b>🧩 قواعد</b><br>${l.grammar||"نکته قواعد این مرحله."}</div><button class="primary" onclick='startQuiz(currentLesson.questions,"آزمون "+currentLesson.title,currentLesson)'>🚀 شروع آزمون</button>`}
+function startQuiz(qs,title,lesson){quiz={questions:clone(qs),title,lesson,index:0,score:0,wrong:[]};renderQuiz()}
+function renderQuiz(){go("practice");let q=quiz.questions[quiz.index];$("#quiz").classList.remove("hidden");$("#quiz").innerHTML=`<div class="qtop"><span>${quiz.title}</span><span>${quiz.index+1}/${quiz.questions.length}</span></div><div class="question">${q[0]}</div><div class="answers">${q[1].map((a,i)=>`<button class="answer" onclick="answer(${i})">${a}</button>`).join("")}</div>`}
+function answer(i){let q=quiz.questions[quiz.index],ok=i===q[2];$$(".answer").forEach((b,n)=>{b.disabled=true;if(n===q[2])b.classList.add("correct");if(n===i&&!ok)b.classList.add("wrong")});state.answered++;if(ok){state.correct++;quiz.score++;state.xp+=12;state.coins+=3;state.missions.xp+=12;beep(true);toast("آفرین! +XP ⚡")}else{quiz.wrong.push(q);if(!(state.owned||[]).includes("shield"))state.hearts=Math.max(0,state.hearts-1);state.mistakes.unshift(q);beep(false);toast("دوباره مرورش کن 🩹")}save();setTimeout(()=>{quiz.index++;quiz.index<quiz.questions.length?renderQuiz():finishQuiz()},600)}
+function finishQuiz(){let pct=Math.round(quiz.score/quiz.questions.length*100);if(quiz.lesson&&pct>=60&&!state.done.includes(quiz.lesson.id)){state.done.push(quiz.lesson.id);state.xp+=50;state.coins+=15;toast("مرحله باز شد! +50 XP 🎉")}state.quizzes++;state.missions.quiz++;state.xp+=pct===100?30:0;save();$("#quiz").innerHTML=`<div class="result"><div class="score">${pct}%</div><h2>${pct>=60?"🎉 مرحله موفق":"💪 دوباره تمرین کن"}</h2><p>${quiz.score} پاسخ درست از ${quiz.questions.length}</p><button class="primary" onclick="go('map');renderAll()">ادامه مسیر</button><button class="secondary" onclick='startQuiz(quiz.questions,quiz.title,quiz.lesson)'>دوباره</button></div>`;renderAll()}
+function speedGame(){let qs=data.lessons.flatMap(l=>l.questions).sort(()=>Math.random()-.5),end=Date.now()+60000,i=0,score=0;go("practice");function tick(){if(Date.now()>=end||i>=qs.length){state.speedBest=Math.max(state.speedBest,score);state.xp+=score*8;state.coins+=score;save();$("#quiz").innerHTML=`<div class="result"><div class="score">${score}</div><h2>⏱️ تمام!</h2><p>رکورد: ${state.speedBest}</p></div>`;renderAll();return}let q=qs[i];$("#quiz").classList.remove("hidden");$("#quiz").innerHTML=`<div class="qtop"><span>⏱️ ${Math.max(0,Math.ceil((end-Date.now())/1000))}</span><span>${score} درست</span></div><div class="question">${q[0]}</div><div class="answers">${q[1].map((a,n)=>`<button class="answer" onclick="window.sa(${n})">${a}</button>`).join("")}</div>`;window.sa=n=>{if(n===q[2]){score++;state.correct++;beep(true)}else beep(false);state.answered++;i++;tick()}}tick()}
+function startMode(m){if(m==="speed")return speedGame();let qs=m==="mistakes"?state.mistakes.slice(0,8):data.lessons.flatMap(l=>l.questions).sort(()=>Math.random()-.5).slice(0,m==="word"?1:10);if(!qs.length)return toast("چیزی برای مرور نیست 🎉");startQuiz(qs,m==="word"?"شکار واژه":m==="mistakes"?"دفتر اشتباهات":"آزمون جامع",null)}
+function flashRender(){let f=flash[flashIndex%flash.length];$("#flashCard").innerHTML=`<small>کارت ${flashIndex+1}</small><strong>${f[0]}</strong><small>برای دیدن معنی کلیک کن</small>`;$("#flashCard").dataset.meaning=f[1];$("#flashCard").onclick=()=>$("#flashCard").innerHTML=`<small>معنی</small><strong>${f[1]}</strong><small>${f[0]}</small>`}
+function renderAdmin(){let students=adminData.students||[];$("#adminStudents").innerHTML=`<div class="card" style="padding:20px"><h3>👨‍🎓 دانش‌آموزان</h3>${students.length?students.map((s,i)=>`<div class="studentRow"><span>👤 ${s.first} ${s.last}<small> • ${s.phone}</small></span><span><input class="grade" type="number" min="0" max="20" value="${s.grade??""}" placeholder="نمره" onchange="setGrade(${i},this.value)"></span></div>`).join(""):`<p>هنوز دانش‌آموزی از این مرورگر ثبت نشده است.</p>`}</div>`}
+function setGrade(i,v){adminData.students[i].grade=Math.max(0,Math.min(20,Number(v)||0));save();toast("نمره ذخیره شد ✅")}
+function adminLessons(){let rows=data.lessons.map((l,i)=>`<div class="adminRow"><span>${i+1}. ${l.title}</span><button class="secondary" onclick="deleteLesson(${l.id})">حذف</button></div>`).join("");$("#adminLessons").innerHTML=`<div class="card" style="padding:20px"><h3>📚 مدیریت درس‌ها</h3>${rows}<hr><input id="newTitle" placeholder="عنوان درس"><input id="newTopic" placeholder="موضوع"><textarea id="newNote" placeholder="جزوه"></textarea><button class="primary" onclick="addLesson()">➕ افزودن مرحله</button></div>`}
+function adminBackup(){$("#adminBackup").innerHTML=`<div class="card" style="padding:20px"><h3>💾 پشتیبان</h3><p>داده‌های مدیر در admin.json و localStorage نگهداری می‌شوند.</p><button class="secondary" onclick="downloadJSON('data.json',data)">📤 خروجی درس‌ها</button><button class="secondary" onclick="downloadJSON('admin.json',adminData)">📤 خروجی مدیر</button><label class="file">📥 ورود JSON<input type="file" accept=".json" onchange="importJSON(event)"></label></div>`}
+function renderAdmin(){renderAdminStudents();adminLessons();adminBackup()}
+function renderAdminStudents(){let s=adminData.students||[];$("#adminStudents").innerHTML=`<div class="card" style="padding:20px"><h3>👨‍🎓 مدیریت دانش‌آموزان</h3>${s.length?s.map((x,i)=>`<div class="studentRow"><span>👤 ${x.first} ${x.last} • ${x.phone}</span><input class="grade" type="number" min="0" max="20" value="${x.grade??""}" placeholder="نمره" onchange="setGrade(${i},this.value)"></div>`).join(""):"<p>هنوز دانش‌آموزی در این مرورگر ثبت نشده.</p>"}</div>`}
+function addLesson(){let l={id:Date.now(),title:$("#newTitle").value||"درس جدید",topic:$("#newTopic").value||"موضوع",icon:"✨",note:$("#newNote").value||"جزوه جدید",grammar:"نکته قواعد",questions:[["سؤال نمونه",["گزینه ۱","گزینه ۲","گزینه ۳","گزینه ۴"],0]]};data.lessons.push(l);save();renderAll();renderAdmin();toast("مرحله اضافه شد")}
+function deleteLesson(id){data.lessons=data.lessons.filter(x=>x.id!==id);state.done=state.done.filter(x=>x!==id);save();renderAll();renderAdmin()}
+function downloadJSON(name,obj){let b=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;a.click();URL.revokeObjectURL(a.href)}
+function importJSON(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(x.lessons)data=x;if(x.students)adminData=x;save();renderAll();renderAdmin();toast("JSON وارد شد")}catch{toast("JSON نامعتبر است")}};r.readAsText(f)}
+function loginStudent(){let first=$("#studentFirst").value.trim(),last=$("#studentLast").value.trim(),phone=$("#studentPhone").value.trim();if(!first||!last||!phone)return toast("هر سه مورد را وارد کن");state.first=first;state.last=last;state.phone=phone;state.name=first+" "+last;state.login=true;adminData.students=adminData.students||[];let found=adminData.students.find(s=>s.phone===phone);if(!found)adminData.students.push({first,last,phone,grade:null,joined:new Date().toISOString()});save();renderAll();go("home");toast("خوش آمدی "+state.name+" 🎉")}
+function renderAll(){updateStats();renderMap();renderDaily();renderMissions();renderAchievements();renderShop();$("#theme").value=state.theme;$("#sound").textContent=state.sound?"روشن":"خاموش";$("#anim").textContent=state.anim?"روشن":"خاموش";flashRender();save()}
+$$("[data-page]").forEach(b=>b.onclick=()=>go(b.dataset.page));
+$$(".mode").forEach(b=>b.onclick=()=>startMode(b.dataset.mode));
+$("#menuBtn").onclick=()=>{$("#sidebar").style.display=$("#sidebar").style.display==="block"?"none":"block"};
+$("#profileBtn").onclick=()=>go("profile");$("#continueBtn").onclick=()=>{let n=data.lessons.find(x=>!state.done.includes(x.id));openLesson(n?.id||data.lessons[0]?.id)};
+$("#flashYes").onclick=()=>{state.xp+=5;state.coins++;state.missions.flash++;flashIndex++;save();renderAll();toast("+5 XP ⚡")};
+$("#flashNo").onclick=()=>{state.mistakes.push([flash[flashIndex%flash.length][0],[flash[flashIndex%flash.length][1]],0]);flashIndex++;save();flashRender();toast("دوباره مرور می‌کنیم 🩹")};
+$("#editName").onclick=()=>{let n=prompt("نام:",state.name);if(n?.trim()){state.name=n.trim();save();renderAll()}};
+$("#theme").onchange=e=>{state.theme=e.target.value;save();applyTheme()};$("#sound").onclick=()=>{state.sound=!state.sound;save();renderAll()};$("#anim").onclick=()=>{state.anim=!state.anim;document.body.style.setProperty("--animation",state.anim?"1":"0");save()};
+$("#reset").onclick=()=>{if(confirm("همه پیشرفت پاک شود؟")){localStorage.removeItem(KEY);location.reload()}};
+$("#adminBtn").onclick=()=>{let c=prompt("کد مدیریت را وارد کن:");if(c===ADMIN_CODE)go("admin");else if(c!==null)toast("کد نادرست است")};
+$("#studentLogin").onclick=loginStudent;
+$$("[data-admin-tab]").forEach(b=>b.onclick=()=>{$$("[data-admin-tab]").forEach(x=>x.classList.remove("active"));b.classList.add("active");["students","lessons","backup"].forEach(x=>$("#admin"+x[0].toUpperCase()+x.slice(1)).classList.add("hidden"));$("#admin"+b.dataset.adminTab[0].toUpperCase()+b.dataset.adminTab.slice(1)).classList.remove("hidden")});
 boot();

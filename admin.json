@@ -1,0 +1,25 @@
+{
+  "app": {
+    "name": "Arabic Quest Ultimate",
+    "version": "3.0",
+    "footer": "سازنده: امیرعلی شریعت‌زاده"
+  },
+  "admin": {
+    "code": "59",
+    "role": "manager",
+    "note": "این پنل کاملاً سمت کاربر است و امنیت واقعی حساب کاربری/سرور ندارد."
+  },
+  "permissions": [
+    "manage_lessons",
+    "manage_questions",
+    "manage_students",
+    "enter_grades",
+    "export_data",
+    "import_data"
+  ],
+  "gradeScale": {
+    "min": 0,
+    "max": 20
+  },
+  "students": []
+}
