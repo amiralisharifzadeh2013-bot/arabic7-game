@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a1022">
+<title>ArabicYar OMEGA — عربی هفتم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="bgGrid"></div><div id="toast"></div><div id="xpFloat"></div>
+
+<header class="topbar">
+  <button class="icon-btn" id="menuBtn">☰</button>
+  <div class="brand"><div class="brand-orb">ع</div><div><b>ArabicYar</b><span>OMEGA • عربی هفتم</span></div></div>
+  <div class="top-actions">
+    <div class="pill">❤️ <span id="hearts">5</span></div>
+    <div class="pill">🪙 <span id="coins">0</span></div>
+    <div class="pill xp-pill">⚡ <span id="xp">0</span></div>
+    <button class="avatar" id="avatarBtn">A</button>
+  </div>
+</header>
+
+<aside class="sidebar" id="sidebar">
+  <div class="side-profile"><div class="avatar big" id="sideAvatar">A</div><div><b id="sideName">مهمان</b><small id="sideLevel">Level 1</small></div></div>
+  <nav id="nav">
+    <button data-page="home" class="active">🏠 خانه</button>
+    <button data-page="map">🗺️ نقشهٔ مراحل</button>
+    <button data-page="learn">📚 درس‌ها</button>
+    <button data-page="arena">⚔️ آرنای عربی</button>
+    <button data-page="flash">🃏 فلش‌کارت</button>
+    <button data-page="missions">🎯 مأموریت‌ها</button>
+    <button data-page="achievements">🏆 دستاوردها</button>
+    <button data-page="shop">🛒 فروشگاه</button>
+    <button data-page="messages">💬 پیام‌ها <i id="msgBadge"></i></button>
+    <button data-page="profile">👤 پروفایل</button>
+    <button data-page="settings">⚙️ تنظیمات</button>
+    <button data-page="admin">🔐 پنل مدیر</button>
+  </nav>
+  <div class="side-foot">سازنده: امیرعلی شریف‌زاده</div>
+</aside>
+
+<main class="main">
+<section class="page active" id="page-home">
+  <div class="spotlight">
+    <div><span class="eyebrow">OMEGA EDITION</span><h1>سلام <span id="heroName">قهرمان</span> 👋</h1>
+    <p>اینجا فقط درس نمی‌خوانی؛ مرحله می‌زنی، XP می‌گیری و باس‌های عربی را شکست می‌دهی.</p>
+    <div class="hero-actions"><button class="primary" onclick="go('learn')">شروع یادگیری 🚀</button><button class="ghost" onclick="go('arena')">ورود به آرنا ⚔️</button></div></div>
+    <div class="hero-core"><div class="ring"><strong id="level">1</strong><span>LEVEL</span></div><div class="progress"><i id="xpBar"></i></div><small><b id="xpToNext">0</b> / <span id="nextXP">120</span> XP</small></div>
+  </div>
+  <div class="grid four" id="quickStats"></div>
+  <div class="grid two">
+    <div class="card mission-card"><div class="card-head"><h2>🎯 مأموریت امروز</h2><button onclick="go('missions')">همه</button></div><div id="dailyMission"></div></div>
+    <div class="card"><div class="card-head"><h2>🔥 زنجیرهٔ یادگیری</h2><span class="streak-fire" id="streak">0 روز</span></div><div id="streakDots" class="streak-dots"></div><p class="muted">هر روز یک تمرین کوتاه بزن تا زنجیره‌ات حفظ شود.</p></div>
+  </div>
+  <div class="card"><div class="card-head"><h2>🧭 مسیر قهرمان</h2><button onclick="go('map')">مشاهده نقشه</button></div><div class="path-mini" id="pathMini"></div></div>
+</section>
+
+<section class="page" id="page-map"><div class="page-title"><span>🗺️</span><div><h1>نقشهٔ ماجراجویی</h1><p>از واژه‌ها شروع کن و به باس نهایی برس.</p></div></div><div id="mapGrid" class="map-grid"></div></section>
+
+<section class="page" id="page-learn"><div class="page-title"><span>📚</span><div><h1>آکادمی عربی</h1><p>هر درس = واژه + نکته + قواعد + آزمون.</p></div></div><div id="lessonGrid" class="lesson-grid"></div></section>
+
+<section class="page" id="page-lesson"><button class="back" onclick="go('learn')">← برگشت به درس‌ها</button><div id="lessonDetail"></div></section>
+
+<section class="page" id="page-arena"><div class="page-title"><span>⚔️</span><div><h1>آرنای عربی</h1><p>تمرین‌های کوتاه، امتیاز بالا، رکورد شخصی.</p></div></div><div class="arena-cards">
+  <button onclick="startArena('memory')"><b>🧠 Memory Rush</b><span>جفت‌کردن واژه و معنی</span><em>+XP +🪙</em></button>
+  <button onclick="startArena('tf')"><b>⚡ True / False</b><span>درست یا غلط در سرعت بالا</span><em>+XP +🪙</em></button>
+  <button onclick="startArena('combo')"><b>👑 Combo Boss</b><span>۱۰ سؤال پشت‌سرهم</span><em>رکوردی</em></button>
+</div><div class="card arena-box" id="arenaBox"><div class="empty">یک آرنا انتخاب کن تا شروع شود.</div></div></section>
+
+<section class="page" id="page-flash"><div class="page-title"><span>🃏</span><div><h1>فلش‌کارت هوشمند</h1><p>روی کارت بزن تا معنی و نکته آشکار شود.</p></div></div><div class="flash-wrap"><div class="flash-card" id="flashCard" onclick="flipFlash()"><div class="flash-front" id="flashFront"></div><div class="flash-back" id="flashBack"></div></div><div class="flash-controls"><button class="ghost" onclick="flashRate(false)">❌ هنوز نه</button><button class="primary" onclick="flashRate(true)">✅ بلدم</button></div></div></section>
+
+<section class="page" id="page-missions"><div class="page-title"><span>🎯</span><div><h1>مأموریت‌ها</h1><p>کارهای کوچک، پاداش‌های بزرگ.</p></div></div><div id="missionGrid" class="mission-grid"></div></section>
+<section class="page" id="page-achievements"><div class="page-title"><span>🏆</span><div><h1>تالار افتخار</h1><p>نشان‌هایی که به‌دست آورده‌ای.</p></div></div><div id="achievementGrid" class="achievement-grid"></div></section>
+<section class="page" id="page-shop"><div class="page-title"><span>🛒</span><div><h1>فروشگاه</h1><p>سکه‌هایت را خرج قابلیت‌های تزئینی و کمکی کن.</p></div></div><div id="shopGrid" class="shop-grid"></div></section>
+
+<section class="page" id="page-messages"><div class="page-title"><span>💬</span><div><h1>مرکز پیام</h1><p>پیام‌های تو و پاسخ‌های مدیر.</p></div></div><div class="grid two"><div class="card"><h2>ارسال پیام</h2><textarea id="messageText" placeholder="پیامت را اینجا بنویس..."></textarea><button class="primary full" onclick="sendMessage()">ارسال به مدیر</button></div><div class="card"><h2>صندوق پیام</h2><div id="messageList"></div></div></div></section>
+
+<section class="page" id="page-profile"><div class="page-title"><span>👤</span><div><h1>پروفایل قهرمان</h1><p>آمار، رکورد و مسیر پیشرفت.</p></div></div><div id="profileBox" class="card"></div></section>
+
+<section class="page" id="page-settings"><div class="page-title"><span>⚙️</span><div><h1>تنظیمات</h1><p>ظاهر و تجربه را شخصی‌سازی کن.</p></div></div><div class="settings-grid"><div class="card"><h2>ظاهر</h2><button class="setting" onclick="cycleTheme()">🌗 حالت: <b id="themeLabel">سیستم</b></button><button class="setting" onclick="toggleSetting('sound')">🔊 صدا: <b id="soundLabel">روشن</b></button><button class="setting" onclick="toggleSetting('anim')">✨ انیمیشن: <b id="animLabel">روشن</b></button></div><div class="card"><h2>داده</h2><button class="setting" onclick="exportBackup()">📦 خروجی پشتیبان JSON</button><label class="setting">📥 ورود پشتیبان JSON<input type="file" accept=".json" hidden onchange="importBackup(event)"></label><button class="setting danger" onclick="resetProgress()">🧨 صفر کردن پیشرفت</button></div></div></section>
+
+<section class="page" id="page-admin"><div class="page-title"><span>🔐</span><div><h1>پنل مدیر</h1><p>مدیریت محتوای اولیه و داده‌های محلی.</p></div></div><div id="adminBox"></div></section>
+
+<section class="page" id="page-login"><div class="login-wrap"><div class="login-card"><div class="brand center"><div class="brand-orb">ع</div><div><b>ArabicYar OMEGA</b><span>ورود قهرمان</span></div></div><h1>آماده‌ای؟</h1><p>نام، نام خانوادگی و شماره را وارد کن. کد تأیید لازم نیست.</p><input id="firstName" placeholder="نام"><input id="lastName" placeholder="نام خانوادگی"><input id="phone" inputmode="tel" placeholder="شماره تلفن"><button class="primary full" onclick="login()">ورود به دنیای عربی 🚀</button></div></div></section>
+</main>
+
+<div class="mobile-nav"><button onclick="go('home')">🏠</button><button onclick="go('learn')">📚</button><button onclick="go('arena')">⚔️</button><button onclick="go('missions')">🎯</button><button onclick="go('profile')">👤</button></div>
+<script src="app.js"></script>
+</body>
+</html>
