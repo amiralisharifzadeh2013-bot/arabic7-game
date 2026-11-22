@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2f4bd8">
+<title>عربی‌یار — عربی هفتم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=Vazirmatn:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="toast" role="status"></div>
+<canvas id="confetti"></canvas>
+
+<header class="topbar">
+  <button class="icon-btn" id="menuBtn" aria-label="منو">☰</button>
+  <div class="brand"><div class="brand-orb">ع</div><div><b>عربی‌یار</b><span>عربی هفتم</span></div></div>
+  <button class="icon-btn" id="searchBtn" aria-label="جستجو">🔍</button>
+  <div class="pill" title="قلب">❤️ <span id="hearts">5</span></div>
+  <div class="pill" title="سکه">🪙 <span id="coins">0</span></div>
+  <div class="pill xp-pill" title="امتیاز">⚡ <span id="xp">0</span></div>
+  <button class="avatar" id="avatarBtn" aria-label="پروفایل">🦉</button>
+</header>
+
+<div id="searchOverlay"><div class="search-panel">
+  <div class="searchbar"><input id="searchInput" placeholder="دنبال چی می‌گردی؟ درس، واژهٔ عربی یا معنی فارسی" autocomplete="off"><button class="ghost" id="searchClose">بستن</button></div>
+  <div id="searchResults"></div>
+</div></div>
+
+<div class="shell">
+<aside class="sidebar" id="sidebar">
+  <div class="side-profile"><div class="avatar big" id="sideAvatar">🦉</div><div><b id="sideName">مهمان</b><br><small id="sideLevel">سطح ۱</small></div></div>
+  <nav id="nav">
+    <button data-page="home" class="active">🏠 خانه</button>
+    <button data-page="learn">📚 درس‌ها</button>
+    <button data-page="dict">📖 واژه‌نامه</button>
+    <button data-page="games">🎮 بازی‌ها</button>
+    <button data-page="flash">🃏 فلش‌کارت</button>
+    <button data-page="mistakes">📝 دفترچه اشتباهات</button>
+    <button data-page="missions">🎯 مأموریت‌ها</button>
+    <button data-page="achievements">🏆 دستاوردها</button>
+    <button data-page="shop">🛒 فروشگاه</button>
+    <button data-page="messages">💬 پیام‌ها <i id="msgBadge" class="hidden"></i></button>
+    <button data-page="profile">👤 پروفایل</button>
+    <button data-page="settings">⚙️ تنظیمات</button>
+    <button data-page="admin">🔐 پنل مدیر</button>
+  </nav>
+  <div class="side-foot">سازنده: امیرعلی شریف‌زاده</div>
+</aside>
+
+<main class="main">
+<section class="page active" id="page-home">
+  <div class="hero">
+    <div class="continue"><div class="big-ar ar">ع</div>
+      <h1 id="heroTitle">سلام قهرمان 👋</h1><p id="heroSub"></p>
+      <button class="primary big-btn" id="heroBtn">شروع کن</button>
+    </div>
+    <div class="card"><div class="lvl"><div class="ring" id="ring"><div><div><b id="level">1</b><br><small>سطح</small></div></div></div>
+      <div style="flex:1"><b id="levelTitle">نوآموز</b><div class="bar" style="margin:6px 0"><i id="xpBar"></i></div><small class="muted"><span id="xpToNext">0</span> از ۱۲۰ امتیاز تا سطح بعد</small></div></div>
+      <div class="card-head" style="margin:14px 0 6px"><b>🔥 زنجیرهٔ روزانه</b><span class="tag" id="streak">۰ روز</span></div><div id="streakDots" class="streak-dots"></div>
+    </div>
+  </div>
+  <div class="grid two" style="margin-bottom:14px">
+    <div class="card wotd"><div class="card-head"><h2>✨ واژهٔ امروز</h2><button class="ghost" id="wotdSpeak">🔊</button></div><div class="w ar" id="wotdAr"></div><div id="wotdFa" style="font-weight:700"></div><small class="muted" id="wotdUnit"></small></div>
+    <div class="card"><div class="card-head"><h2>🎯 مأموریت‌های امروز</h2><button class="ghost" onclick="go('missions')">همه</button></div><div id="miniMissions"></div></div>
+  </div>
+  <div class="grid four" id="quickStats"></div>
+</section>
+
+<section class="page" id="page-learn"><div class="page-title"><span>📚</span><div><h1>درس‌ها</h1><p>۱۷ درس کتاب؛ اول بخوان، بعد آزمون بده.</p></div></div>
+  <div class="searchbar"><input id="lessonFilter" placeholder="جستجو در درس‌ها (مثلاً: ۵ یا مثنی)"></div>
+  <div class="chips" id="lessonChips"></div><div id="lessonGrid" class="lesson-grid"></div></section>
+
+<section class="page" id="page-lesson"><button class="ghost" onclick="go('learn')">← همهٔ درس‌ها</button><div id="lessonDetail" style="margin-top:12px"></div></section>
+
+<section class="page" id="page-dict"><div class="page-title"><span>📖</span><div><h1>واژه‌نامه</h1><p>همهٔ واژه‌های کتاب؛ تایپ کن تا پیدا شود.</p></div></div>
+  <div class="searchbar"><input id="dictFilter" placeholder="واژهٔ عربی یا معنی فارسی"></div><div id="dictList" class="vocab-list"></div></section>
+
+<section class="page" id="page-games"><div class="page-title"><span>🎮</span><div><h1>بازی‌ها</h1><p>یاد بگیر و امتیاز جمع کن.</p></div></div>
+  <div class="game-cards" id="gameCards"></div><div class="card" id="arenaBox"><div class="empty">یک بازی انتخاب کن.</div></div></section>
+
+<section class="page" id="page-flash"><div class="page-title"><span>🃏</span><div><h1>فلش‌کارت</h1><p>کارت‌هایی که بلد نیستی بیشتر برمی‌گردند.</p></div></div><div class="flash-wrap" id="flashBox"></div></section>
+<section class="page" id="page-mistakes"><div class="page-title"><span>📝</span><div><h1>دفترچه اشتباهات</h1><p>سؤال‌هایی که غلط زدی؛ دوباره تمرین کن تا پاک شوند.</p></div></div><div id="mistakeBox"></div></section>
+<section class="page" id="page-missions"><div class="page-title"><span>🎯</span><div><h1>مأموریت‌های امروز</h1><p>هر روز تازه می‌شوند.</p></div></div><div id="missionGrid" class="missions"></div></section>
+<section class="page" id="page-achievements"><div class="page-title"><span>🏆</span><div><h1>دستاوردها</h1><p>نشان‌هایی که گرفته‌ای.</p></div></div><div id="achievementGrid" class="ach-grid"></div></section>
+<section class="page" id="page-shop"><div class="page-title"><span>🛒</span><div><h1>فروشگاه</h1><p>سکه‌هایت را خرج کن.</p></div></div><div id="shopGrid" class="shop-grid"></div></section>
+<section class="page" id="page-messages"><div class="page-title"><span>💬</span><div><h1>پیام‌ها</h1><p>پیام‌های تو و پاسخ مدیر (فقط در همین دستگاه ذخیره می‌شوند).</p></div></div>
+  <div class="grid two"><div class="card"><h2>پیام جدید</h2><textarea class="field" id="messageText" placeholder="پیامت را بنویس..."></textarea><button class="primary full" style="margin-top:8px" onclick="sendMessage()">ارسال به مدیر</button></div><div class="card"><h2>صندوق پیام</h2><div id="messageList"></div></div></div></section>
+<section class="page" id="page-profile"><div class="page-title"><span>👤</span><div><h1>پروفایل</h1><p>آمار و پیشرفت تو.</p></div></div><div id="profileBox" class="card"></div></section>
+<section class="page" id="page-settings"><div class="page-title"><span>⚙️</span><div><h1>تنظیمات</h1><p>ظاهر و داده‌ها.</p></div></div>
+  <div class="grid two"><div class="card"><h2>ظاهر</h2><button class="setting" onclick="cycleTheme()">🌗 حالت: <b id="themeLabel"></b></button><button class="setting" onclick="toggleSetting('sound')">🔊 صدا: <b id="soundLabel"></b></button><button class="setting" onclick="toggleSetting('anim')">✨ انیمیشن: <b id="animLabel"></b></button></div>
+  <div class="card"><h2>داده</h2><button class="setting" onclick="exportBackup()">📦 گرفتن نسخهٔ پشتیبان</button><label class="setting">📥 بازگردانی پشتیبان<input type="file" accept=".json" hidden onchange="importBackup(event)"></label><button class="setting danger" onclick="resetProgress()">🧨 پاک کردن پیشرفت</button></div></div></section>
+<section class="page" id="page-admin"><div class="page-title"><span>🔐</span><div><h1>پنل مدیر</h1><p>پیام‌ها و آمار این دستگاه.</p></div></div><div id="adminBox"></div></section>
+
+<section class="page" id="page-login"><div class="login-wrap"><div class="login-card">
+  <div class="brand"><div class="brand-orb">ع</div><div><b>عربی‌یار</b><span>عربی هفتم</span></div></div>
+  <h1>آماده‌ای؟</h1><p class="muted" style="margin:0">اسمت را بنویس و یک شخصیت انتخاب کن. اطلاعات فقط روی همین دستگاه می‌ماند.</p>
+  <input class="field" id="firstName" placeholder="نام"><input class="field" id="lastName" placeholder="نام خانوادگی">
+  <input class="field" id="phone" inputmode="tel" placeholder="شمارهٔ تلفن (اختیاری)">
+  <div class="avatars" id="avatarPick"></div>
+  <button class="primary full big-btn" onclick="login()">بزن بریم 🚀</button>
+</div></div></section>
+</main>
+</div>
+
+<nav class="mobile-nav" id="mobileNav">
+  <button data-page="home"><span>🏠</span>خانه</button><button data-page="learn"><span>📚</span>درس‌ها</button>
+  <button data-page="games"><span>🎮</span>بازی</button><button data-page="dict"><span>📖</span>واژه‌ها</button><button data-page="profile"><span>👤</span>من</button>
+</nav>
+<script src="app.js"></script>
+<script src="games.js"></script>
+</body>
+</html>
